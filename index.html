@@ -3,57 +3,126 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Goal Tracker 💙</title>
+  <title>💙 Goal Tracker</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
   <style>
+    :root {
+      --bg-light: #eaf6ff;
+      --card-light: #ffffffcc;
+      --text-light: #2a4d69;
+      --bar-light: linear-gradient(90deg, #74b9ff, #a0c4ff);
+
+      --bg-dark: #0e1822;
+      --card-dark: #172b3aee;
+      --text-dark: #d6eaff;
+      --bar-dark: linear-gradient(90deg, #4aa3ff, #7ccfff);
+
+      --transition: 0.4s ease;
+    }
+
     body {
       font-family: 'Poppins', sans-serif;
-      background: #eaf6ff;
+      background: var(--bg-light);
+      color: var(--text-light);
       display: flex;
-      flex-direction: column;
       align-items: center;
       justify-content: center;
       height: 100vh;
-      color: #2a4d69;
+      transition: background var(--transition), color var(--transition);
     }
+
+    body.dark {
+      background: var(--bg-dark);
+      color: var(--text-dark);
+    }
+
     .card {
-      background: #ffffff;
-      padding: 30px 40px;
-      border-radius: 20px;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+      background: var(--card-light);
+      backdrop-filter: blur(10px);
+      border-radius: 25px;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.1);
       text-align: center;
+      padding: 40px;
       width: 90%;
-      max-width: 400px;
+      max-width: 420px;
+      transition: background var(--transition), box-shadow var(--transition);
     }
+
+    body.dark .card {
+      background: var(--card-dark);
+      box-shadow: 0 8px 25px rgba(0,0,0,0.4);
+    }
+
     h1 {
-      font-size: 2em;
+      font-size: 2.2em;
       margin-bottom: 10px;
-      color: #31708e;
+      background: linear-gradient(90deg, #74b9ff, #a0c4ff);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
     }
+
     .goal {
       font-size: 1.1em;
-      margin-bottom: 20px;
+      margin-bottom: 25px;
+      opacity: 0.85;
     }
+
     .progress-bar {
       width: 100%;
-      height: 20px;
-      background: #d6eaff;
-      border-radius: 10px;
+      height: 24px;
+      background: rgba(0,0,0,0.05);
+      border-radius: 12px;
       overflow: hidden;
-      margin-bottom: 10px;
+      position: relative;
     }
+
+    body.dark .progress-bar {
+      background: rgba(255,255,255,0.1);
+    }
+
     .progress {
       height: 100%;
-      background: linear-gradient(90deg, #74b9ff, #a0c4ff);
       width: 0%;
-      transition: width 1s ease-in-out;
+      background: var(--bar-light);
+      border-radius: 12px;
+      transition: width 1.2s ease-in-out;
     }
+
+    body.dark .progress {
+      background: var(--bar-dark);
+    }
+
     .percent {
-      font-weight: bold;
-      color: #2a4d69;
+      font-weight: 600;
+      margin-top: 15px;
+      font-size: 1.1em;
+    }
+
+    .toggle {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      font-size: 1.6em;
+      transition: transform 0.3s;
+    }
+
+    .toggle:hover {
+      transform: rotate(20deg);
+    }
+
+    footer {
+      margin-top: 25px;
+      font-size: 0.85em;
+      opacity: 0.6;
     }
   </style>
 </head>
 <body>
+  <button class="toggle" id="themeToggle">🌙</button>
+
   <div class="card">
     <h1>🎯 Goal Tracker</h1>
     <div class="goal" id="goalText">กำลังโหลด...</div>
@@ -61,17 +130,48 @@
       <div class="progress" id="progressBar"></div>
     </div>
     <div class="percent" id="percentText"></div>
+    <footer>Made with 💙 by Ting</footer>
   </div>
+
   <script>
+    // Load goal data
     fetch('goal.txt')
-      .then(response => response.text())
-      .then(text => {
-        const [current, total] = text.trim().split('/').map(Number);
+      .then(r => r.text())
+      .then(t => {
+        const [current, total] = t.trim().split('/').map(Number);
         const percent = Math.min((current / total) * 100, 100);
         document.getElementById('goalText').textContent = `เก็บได้ ${current.toLocaleString()} / ${total.toLocaleString()} บาท`;
         document.getElementById('progressBar').style.width = percent + '%';
         document.getElementById('percentText').textContent = `ความคืบหน้า: ${percent.toFixed(1)}%`;
       });
+
+    // Theme toggle system
+    const toggle = document.getElementById('themeToggle');
+    const body = document.body;
+
+    function setTheme(dark) {
+      if (dark) {
+        body.classList.add('dark');
+        toggle.textContent = '💡';
+        localStorage.setItem('theme', 'dark');
+      } else {
+        body.classList.remove('dark');
+        toggle.textContent = '🌙';
+        localStorage.setItem('theme', 'light');
+      }
+    }
+
+    // Load saved or system theme
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme) {
+      setTheme(savedTheme === 'dark');
+    } else {
+      setTheme(window.matchMedia('(prefers-color-scheme: dark)').matches);
+    }
+
+    toggle.addEventListener('click', () => {
+      setTheme(!body.classList.contains('dark'));
+    });
   </script>
 </body>
 </html>
