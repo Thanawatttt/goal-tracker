@@ -13,28 +13,34 @@ jobs:
       - name: Checkout main branch
         uses: actions/checkout@v4
         with:
+          ref: main
           fetch-depth: 0
 
-      - name: Setup git identity
+      - name: Save files from main
+        run: |
+          mkdir temp
+          cp goal.txt index.html temp/
+
+      - name: Checkout or create gh-pages branch
+        run: |
+          git fetch origin
+          if git show-ref --verify --quiet refs/heads/gh-pages; then
+            git checkout gh-pages
+          else
+            git checkout --orphan gh-pages
+            rm -rf *
+          fi
+
+      - name: Copy updated files to gh-pages
+        run: |
+          cp temp/goal.txt temp/index.html ./
+
+      - name: Setup git
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
-      - name: Prepare gh-pages branch
-        run: |
-          # ถ้ายังไม่มี gh-pages ให้สร้างใหม่จาก main
-          if ! git show-ref --verify --quiet refs/heads/gh-pages; then
-            git checkout -b gh-pages
-          else
-            git checkout gh-pages
-            git merge origin/main --no-edit || true
-          fi
-
-      - name: Copy files
-        run: |
-          cp goal.txt index.html ./
-
-      - name: Commit and push changes
+      - name: Commit and push
         run: |
           git add goal.txt index.html
           git commit -m "Update goal progress [auto]" || echo "No changes to commit"
