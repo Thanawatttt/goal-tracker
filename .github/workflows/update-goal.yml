@@ -1,0 +1,23 @@
+name: Update Goal Page
+
+on:
+  push:
+    paths:
+      - "goal.txt"
+
+jobs:
+  update-page:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Copy updated goal.txt to gh-pages
+        run: |
+          git fetch origin gh-pages || true
+          git checkout gh-pages || git checkout --orphan gh-pages
+          cp ../goal.txt ./goal.txt
+          git add goal.txt
+          git commit -m "Update goal progress [auto]" || echo "No changes to commit"
+          git push origin gh-pages
+          
